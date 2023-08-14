@@ -11,9 +11,27 @@ import (
 	"time"
 )
 
+//nolint:gochecknoglobals
+var defaultLevels = map[Level]string{
+	DebugLevel: "DEBUG",
+	InfoLevel:  "INFO",
+	WarnLevel:  "WARN",
+	ErrorLevel: "ERROR",
+}
+
+func copyLevels(levels map[Level]string) map[Level]string {
+	copied := make(map[Level]string, len(levels))
+	for level, value := range levels {
+		copied[level] = value
+	}
+
+	return copied
+}
+
 type implLoggerConfig struct {
 	levelKey        string
 	level           Level
+	levels          map[Level]string
 	timestampKey    string
 	timestampFormat string
 	timestampZone   *time.Location
@@ -34,6 +52,7 @@ func NewBuilder(level Level, w io.Writer) implLoggerConfig { //nolint:revive
 	return implLoggerConfig{
 		levelKey:        "severity",
 		level:           level,
+		levels:          copyLevels(defaultLevels),
 		timestampKey:    "timestamp",
 		timestampFormat: time.RFC3339Nano,
 		timestampZone:   time.Local, //nolint:gosmopolitan
@@ -48,6 +67,11 @@ func NewBuilder(level Level, w io.Writer) implLoggerConfig { //nolint:revive
 
 func (c implLoggerConfig) SetLevelKey(key string) implLoggerConfig { //nolint:revive
 	c.levelKey = key
+	return c
+}
+
+func (c implLoggerConfig) SetLevels(levels map[Level]string) implLoggerConfig { //nolint:revive
+	c.levels = levels
 	return c
 }
 
@@ -462,7 +486,7 @@ func (e *implLogEntry) logf(level Level, format string, args ...interface{}) err
 
 	if len(e.logger.config.levelKey) > 0 {
 		b.bytes = appendKey(b.bytes, e.logger.config.levelKey)
-		b.bytes = appendLevelField(b.bytes, level)
+		b.bytes = appendLevelField(b.bytes, e.logger.config.levels, level)
 		b.bytes = append(b.bytes, ',')
 	}
 	if len(e.logger.config.timestampKey) > 0 {
@@ -645,15 +669,14 @@ func appendKey(dst []byte, key string) []byte {
 	return dst
 }
 
-func appendLevelField(dst []byte, level Level) []byte {
-	switch level { //nolint:exhaustive
-	case InfoLevel:
-		return append(dst, `"INFO"`...)
-	case WarnLevel:
-		return append(dst, `"WARNING"`...)
-	case ErrorLevel:
-		return append(dst, `"ERROR"`...)
-	default:
-		return append(dst, `"DEBUG"`...)
+func appendLevelField(dst []byte, levels map[Level]string, level Level) []byte {
+	v, ok := levels[level]
+	if !ok {
+		v = "DEBUG"
 	}
+
+	dst = append(dst, '"')
+	dst = appendJSONEscapedString(dst, v)
+	dst = append(dst, '"')
+	return dst
 }

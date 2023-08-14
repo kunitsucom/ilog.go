@@ -89,6 +89,7 @@ func TestLogger(t *testing.T) {
 		const expectedLevel = DebugLevel
 		l := NewBuilder(ErrorLevel, buf).
 			SetLevelKey("level").
+			SetLevels(copyLevels(defaultLevels)).
 			SetTimestampKey("time").
 			SetTimestampFormat(time.UnixDate).
 			SetTimestampZone(time.UTC).
@@ -264,7 +265,7 @@ func TestLogEntry(t *testing.T) {
 	t.Run("success,Warnf", func(t *testing.T) {
 		t.Parallel()
 		buf := bytes.NewBuffer(nil)
-		expected := regexp.MustCompilePOSIX(`{"severity":"WARNING","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"Warnf"}`)
+		expected := regexp.MustCompilePOSIX(`{"severity":"WARN","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"Warnf"}`)
 
 		NewBuilder(DebugLevel, buf).SetTimestampZone(time.UTC).Build().Warnf("Warnf")
 

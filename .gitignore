@@ -1,0 +1,18 @@
+# common
+.DS_Store
+Thumbs.db
+*.swp
+.*.swp
+:*
+*~
+.*~
+
+# codecov
+coverage.txt
+coverage.html
+
+# env
+.env
+
+# go
+/cmd/sandbox/**

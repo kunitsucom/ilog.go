@@ -17,9 +17,9 @@ func TestScenario(t *testing.T) {
 	t.Run("success,JSON", func(t *testing.T) {
 		t.Parallel()
 		buf := bytes.NewBuffer(nil)
-		expected := regexp.MustCompilePOSIX(`{"severity":"DEBUG","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"Logf: format string","bool":true,"boolPointer":false,"boolPointer2":null,"byte":"\\u0001","bytes":"bytes","time\.Duration":"1h1m1.001001001s","error":"ilog: log entry not written","errorFormatter":"ilog: log entry not written","errorNil":"<nil>","float32":1\.234567,"float64":1\.23456789,"float64NaN":"NaN","float64\+Inf":"\+Inf","float64-Inf":"-Inf","int":-1,"int8":-1,"int16":-1,"int32":123456789,"int64":123456789,"string":"string","stringEscaped":"\\b\\f\\n\\r\\t","time\.Time":"2023-08-13T04:38:39\.123456789\+09:00","uint":1,"uint16":1,"uint32":123456789,"uint64":123456789,"fmt\.Formatter":"testFormatter","fmt\.Stringer":"testStringer","fmt\.Stringer2":"<nil>","func":"0x[0-9a-f]+"}`)
+		expected := regexp.MustCompilePOSIX(`{"severity":"DEBUG","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"Logf: format string","bool":true,"boolPointer":false,"boolPointer2":null,"byte":"\\u0001","bytes":"bytes","time\.Duration":"1h1m1.001001001s","error":"ilog: log entry not written","errorFormatter":"ilog: log entry not written","errorNil":"<nil>","float32":1\.234567,"float64":1\.23456789,"float64NaN":"NaN","float64\+Inf":"\+Inf","float64-Inf":"-Inf","int":-1,"int8":-1,"int16":-1,"int32":123456789,"int64":123456789,"string":"string","stringEscaped":"\\b\\f\\n\\r\\t","time\.Time":"2023-08-13T04:38:39\.123456789\+09:00","uint":1,"uint16":1,"uint32":123456789,"uint64":123456789,"fmt\.Formatter":"testFormatter","fmt\.Stringer":"testStringer","fmt\.Stringer2":"<nil>","func":"0x[0-9a-f]+","append":"logger"}`)
 
-		le := NewBuilder(DebugLevel, buf).
+		l := NewBuilder(DebugLevel, buf).
 			SetTimestampZone(time.UTC).
 			Build().
 			Any("bool", true).
@@ -51,9 +51,11 @@ func TestScenario(t *testing.T) {
 			Any("fmt.Formatter", &testFormatter{}).
 			Any("fmt.Stringer", testStringer("testStringer")).
 			Any("fmt.Stringer2", (*testStringer)(nil)).
-			Any("func", func() {})
+			Any("func", func() {}).Logger()
 
-		le.Logf(DebugLevel, "Logf: %s", "format string")
+		l = l.String("append", "logger").Logger()
+
+		l.Logf(DebugLevel, "Logf: %s", "format string")
 		if !expected.Match(buf.Bytes()) {
 			t.Errorf("❌: !expected.Match(buf.Bytes()):\n%s", buf)
 		}

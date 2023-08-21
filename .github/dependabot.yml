@@ -19,3 +19,17 @@ updates:
       interval: "daily"
       time: "09:00"
       timezone: "Asia/Tokyo"
+
+  - package-ecosystem: "gomod"
+    directory: "/implementations/zap/"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+
+  - package-ecosystem: "gomod"
+    directory: "/implementations/zerolog/"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "Asia/Tokyo"

@@ -439,10 +439,11 @@ func (e *implLogEntry) Uint64(key string, value uint64) LogEntry {
 }
 
 func (e *implLogEntry) Logger() Logger {
-	l := *e.logger
-	l.fields = make([]byte, len(e.bytesBuffer.bytes))
-	copy(l.fields, e.bytesBuffer.bytes)
-	return &l
+	copied := *e.logger
+	copied.fields = make([]byte, len(e.logger.fields))
+	copy(copied.fields, e.logger.fields)
+	copied.fields = append(copied.fields, e.bytesBuffer.bytes...)
+	return &copied
 }
 
 func (e *implLogEntry) Debugf(format string, args ...interface{}) {

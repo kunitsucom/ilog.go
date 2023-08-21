@@ -35,6 +35,10 @@ func (l *implLogger) AddCallerSkip(skip int) ilog.Logger {
 }
 
 func (l *implLogger) Copy() ilog.Logger {
+	return l.copy()
+}
+
+func (l *implLogger) copy() *implLogger {
 	copied := *l
 	copiedZerologLogger := *l.zerologLogger
 	copied.zerologLogger = &copiedZerologLogger
@@ -259,14 +263,15 @@ func (e *implLogEntry) Uint64(key string, value uint64) ilog.LogEntry {
 }
 
 func (e *implLogEntry) Logger() ilog.Logger {
-	c := e.logger.zerologLogger.With()
+	copied := e.logger.copy()
+	c := copied.zerologLogger.With()
 	for _, event := range e.zCtxs {
 		c = event(c)
 	}
 	logger := c.Logger()
-	e.logger.zerologLogger = &logger
+	copied.zerologLogger = &logger
 
-	return e.logger
+	return copied
 }
 
 func (e *implLogEntry) Write(p []byte) (n int, err error) {

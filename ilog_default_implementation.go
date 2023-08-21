@@ -132,6 +132,10 @@ func (l *implLogger) AddCallerSkip(skip int) Logger {
 }
 
 func (l *implLogger) Copy() Logger {
+	return l.copy()
+}
+
+func (l *implLogger) copy() *implLogger {
 	copied := *l
 	copied.fields = make([]byte, len(l.fields))
 	copy(copied.fields, l.fields)
@@ -439,11 +443,9 @@ func (e *implLogEntry) Uint64(key string, value uint64) LogEntry {
 }
 
 func (e *implLogEntry) Logger() Logger {
-	copied := *e.logger
-	copied.fields = make([]byte, len(e.logger.fields))
-	copy(copied.fields, e.logger.fields)
+	copied := e.logger.copy()
 	copied.fields = append(copied.fields, e.bytesBuffer.bytes...)
-	return &copied
+	return copied
 }
 
 func (e *implLogEntry) Debugf(format string, args ...interface{}) {

@@ -33,6 +33,8 @@ func TestNew(t *testing.T) {
 		Uint64("uint64", 1).
 		Logger()
 
+	l = l.String("append", "logger").Logger()
+
 	l.String("string", "new logger").Debugf("debug message")
 
 	t.Logf("ℹ️: buf:\n%s", buf)

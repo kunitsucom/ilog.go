@@ -34,6 +34,10 @@ func (l *implLogger) AddCallerSkip(skip int) ilog.Logger {
 }
 
 func (l *implLogger) Copy() ilog.Logger {
+	return l.copy()
+}
+
+func (l *implLogger) copy() *implLogger {
 	copied := *l
 	copied.zapLogger = l.zapLogger.WithOptions() // NOTE: call (*zap.Logger).clone() internally
 	return &copied
@@ -226,9 +230,9 @@ func (e *implLogEntry) Uint64(key string, value uint64) ilog.LogEntry {
 }
 
 func (e *implLogEntry) Logger() ilog.Logger {
-	e.logger.zapLogger = e.logger.zapLogger.With(e.fields...)
-	e.fields = e.fields[:0]
-	return e.logger
+	copied := e.logger.copy()
+	copied.zapLogger = copied.zapLogger.With(e.fields...)
+	return copied
 }
 
 func (e *implLogEntry) Write(p []byte) (int, error) {
@@ -260,7 +264,9 @@ func (e *implLogEntry) logf(level ilog.Level, format string, args ...interface{}
 	if level < e.logger.level {
 		return
 	}
-	defer func() { e.fields = e.fields[:0] }()
+	defer func() {
+		e.fields = make([]zap.Field, 0)
+	}()
 	switch level { //nolint:exhaustive
 	case ilog.InfoLevel:
 		if len(args) > 0 {

@@ -1,11 +1,17 @@
 # ilog.go
 
-`ilog.go` is a simple logging interface library for Go. By defining only the logger interface, users can easily swap out the underlying logging implementation without changing their application code.
+`ilog.go` is a simple logging interface library for Go. By defining only the logger interface `ilog.Logger`, users can easily swap out the underlying logging implementation without changing their application code.
 
 ## Features
 
 - **Flexibility**: Allows users to choose or switch between different logging implementations.
 - **Simplicity**: Only defines the logging interface, leaving the choice of logging implementation to the user.
+
+## Interface
+
+`ilog.Logger` is defined here:
+
+- [ilog.go](ilog.go)
 
 ## Reference Implementations
 

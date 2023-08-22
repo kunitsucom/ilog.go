@@ -3,8 +3,9 @@ package zap
 import (
 	"time"
 
-	"github.com/kunitsucom/ilog.go"
 	"go.uber.org/zap"
+
+	"github.com/kunitsucom/ilog.go"
 )
 
 type implLogger struct {

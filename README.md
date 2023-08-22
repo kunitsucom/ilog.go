@@ -9,17 +9,17 @@
 
 ## Interface
 
-`ilog.Logger` is defined here:
+`ilog.Logger` interface is defined here:
 
 - [ilog.go](ilog.go)
 
 ## Reference Implementations
 
-We provide reference implementations for some of the popular logging packages and a custom logger:
+We provide reference implementations for a custom logger and some of the popular logging libraries:
 
-- [ilog_default_implementation.go](ilog_default_implementation.go): custom implementation (Default. You can use this as a blueprint to integrate other loggers)
-- [implementations/zap/zap.go](implementations/zap/zap.go): implementation for go.uber.org/zap
-- [implementations/zerolog/zerolog.go](implementations/zerolog/zerolog.go): implementation for github.com/rs/zerolog
+- [ilog_default_implementation.go](ilog_default_implementation.go): custom logger implementation (Default. You can use this as a blueprint to integrate other loggers)
+- [implementations/zap/zap.go](implementations/zap/zap.go): implementation for [go.uber.org/zap](https://github.com/uber-go/zap)
+- [implementations/zerolog/zerolog.go](implementations/zerolog/zerolog.go): implementation for [github.com/rs/zerolog](https://github.com/rs/zerolog)
 
 ## Usage
 
@@ -29,7 +29,7 @@ First, go get `ilog.go` in your Go application:
 go get -u github.com/kunitsucom/ilog.go
 ```
 
-Then, define a variable of the `Logger` interface type and initialize it with your chosen logger implementation.
+Then, define a variable of the `ilog.Logger` interface type and initialize it with your chosen logger implementation.
 
  For example, if using the default implementation:
 

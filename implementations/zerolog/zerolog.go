@@ -3,8 +3,9 @@ package zerolog
 import (
 	"time"
 
-	"github.com/kunitsucom/ilog.go"
 	"github.com/rs/zerolog"
+
+	"github.com/kunitsucom/ilog.go"
 )
 
 type implLogger struct {

@@ -6,9 +6,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/rs/zerolog"
+
 	"github.com/kunitsucom/ilog.go"
 	ilogzerolog "github.com/kunitsucom/ilog.go/implementations/zerolog"
-	"github.com/rs/zerolog"
 )
 
 func TestNew(t *testing.T) {

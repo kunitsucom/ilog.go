@@ -17,7 +17,7 @@ func TestScenario(t *testing.T) {
 	t.Run("success,JSON", func(t *testing.T) {
 		t.Parallel()
 		buf := bytes.NewBuffer(nil)
-		expected := regexp.MustCompilePOSIX(`{"severity":"DEBUG","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"Logf: format string","bool":true,"boolPointer":false,"boolPointer2":null,"byte":"\\u0001","bytes":"bytes","time\.Duration":"1h1m1.001001001s","error":"ilog: log entry not written","errorFormatter":"ilog: log entry not written","errorNil":"<nil>","float32":1\.234567,"float64":1\.23456789,"float64NaN":"NaN","float64\+Inf":"\+Inf","float64-Inf":"-Inf","int":-1,"int8":-1,"int16":-1,"int32":123456789,"int64":123456789,"string":"string","stringEscaped":"\\b\\f\\n\\r\\t","time\.Time":"2023-08-13T04:38:39\.123456789\+09:00","uint":1,"uint16":1,"uint32":123456789,"uint64":123456789,"fmt\.Formatter":"testFormatter","fmt\.Stringer":"testStringer","fmt\.Stringer2":"<nil>","func":"0x[0-9a-f]+","append":"logger"}`)
+		expected := regexp.MustCompilePOSIX(`{"severity":"DEBUG","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"Logf: format string","bool":true,"boolPointer":false,"boolPointer2":null,"byte":"\\u0001","bytes":"bytes","time\.Duration":"1h1m1.001001001s","error":"ilog: log entry not written","errorFormatter":"ilog: log entry not written","errorNil":null,"float32":1\.234567,"float64":1\.23456789,"float64NaN":"NaN","float64\+Inf":"\+Inf","float64-Inf":"-Inf","int":-1,"int8":-1,"int16":-1,"int32":123456789,"int64":123456789,"string":"string","stringEscaped":"\\b\\f\\n\\r\\t","time\.Time":"2023-08-13T04:38:39\.123456789\+09:00","uint":1,"uint16":1,"uint32":123456789,"uint64":123456789,"jsonSuccess":{"json":true},"jsonFailure":"json.Marshaler: v.MarshalJSON: unexpected EOF","jsonNull":null,"fmt\.Formatter":"testFormatter","fmt\.Stringer":"testStringer","fmt.StringerNull":null,"func":"0x[0-9a-f]+","mapSuccess":{"map":{"in":1}},"mapFailure":"map\[map:0x[0-9a-f]+\]","sliceSuccess":\["a","b"\],"sliceFailure":"\[0x[0-9a-f]+\]","append":"logger"}`)
 
 		l := NewBuilder(DebugLevel, buf).
 			SetTimestampZone(time.UTC).
@@ -48,10 +48,18 @@ func TestScenario(t *testing.T) {
 			Any("uint16", uint16(1)).
 			Any("uint32", uint32(123456789)).
 			Any("uint64", uint64(123456789)).
+			Any("jsonSuccess", &testJSONMarshaler{MockMarshalJSON: func() ([]byte, error) { return []byte(`{"json":true}`), nil }}).
+			Any("jsonFailure", &testJSONMarshaler{MockMarshalJSON: func() ([]byte, error) { return nil, io.ErrUnexpectedEOF }}).
+			Any("jsonNull", (*testJSONMarshaler)(nil)).
 			Any("fmt.Formatter", &testFormatter{}).
 			Any("fmt.Stringer", testStringer("testStringer")).
-			Any("fmt.Stringer2", (*testStringer)(nil)).
-			Any("func", func() {}).Logger()
+			Any("fmt.StringerNull", (*testStringer)(nil)).
+			Any("func", func() {}).
+			Any("mapSuccess", map[string]interface{}{"map": map[string]interface{}{"in": 1}}).
+			Any("mapFailure", map[string]interface{}{"map": func() {}}).
+			Any("sliceSuccess", []string{"a", "b"}).
+			Any("sliceFailure", []func(){func() {}}).
+			Logger()
 
 		l = l.String("append", "logger").Logger()
 
@@ -96,7 +104,7 @@ func TestLogger(t *testing.T) {
 			SetTimestampFormat(time.UnixDate).
 			SetTimestampZone(time.UTC).
 			SetCallerKey("file").
-			UseShortCaller(false).
+			UseLongCaller(true).
 			SetMessageKey("msg").
 			SetSeparator("\r\n").
 			Build().
@@ -151,6 +159,14 @@ func TestLogger(t *testing.T) {
 	})
 }
 
+type testJSONMarshaler struct {
+	MockMarshalJSON func() ([]byte, error)
+}
+
+func (m *testJSONMarshaler) MarshalJSON() ([]byte, error) {
+	return m.MockMarshalJSON()
+}
+
 type testFormatter struct{}
 
 func (f *testFormatter) Format(s fmt.State, verb rune) {
@@ -180,7 +196,7 @@ func TestLogEntry(t *testing.T) {
 	t.Run("success,LogEntry", func(t *testing.T) {
 		t.Parallel()
 		buf := bytes.NewBuffer(nil)
-		expected := regexp.MustCompilePOSIX(`{"severity":"DEBUG","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"Logf: format string","bool":true,"boolPointer":false,"boolPointer2":null,"byte":"\\u0001","bytes":"bytes","time\.Duration":"1h1m1.001001001s","error":"ilog: log entry not written","errorFormatter":"ilog: log entry not written","errorNil":"<nil>","float32":1\.234567,"float64":1\.23456789,"float64NaN":"NaN","float64\+Inf":"\+Inf","float64-Inf":"-Inf","int":-1,"int8":-1,"int16":-1,"int32":123456789,"int64":123456789,"string":"string","stringEscaped":"\\b\\f\\n\\r\\t","time\.Time":"2023-08-13T04:38:39\.123456789\+09:00","uint":1,"uint16":1,"uint32":123456789,"uint64":123456789,"fmt\.Formatter":"testFormatter","fmt\.Stringer":"testStringer","fmt\.Stringer2":"<nil>","func":"0x[0-9a-f]+"}`)
+		expected := regexp.MustCompilePOSIX(`{"severity":"DEBUG","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"Logf: format string","bool":true,"boolPointer":false,"boolPointer2":null,"byte":"\\u0001","bytes":"bytes","time\.Duration":"1h1m1.001001001s","error":"ilog: log entry not written","errorFormatter":"ilog: log entry not written","errorNil":null,"float32":1\.234567,"float64":1\.23456789,"float64NaN":"NaN","float64\+Inf":"\+Inf","float64-Inf":"-Inf","int":-1,"int8":-1,"int16":-1,"int32":123456789,"int64":123456789,"string":"string","stringEscaped":"\\b\\f\\n\\r\\t","time\.Time":"2023-08-13T04:38:39\.123456789\+09:00","uint":1,"uint16":1,"uint32":123456789,"uint64":123456789,"jsonSuccess":{"json":true},"jsonFailure":"json.Marshaler: v.MarshalJSON: unexpected EOF","jsonNull":null,"fmt\.Formatter":"testFormatter","fmt\.Stringer":"testStringer","fmt.StringerNull":null,"func":"0x[0-9a-f]+","mapSuccess":{"map":{"in":1}},"mapFailure":"map\[map:0x[0-9a-f]+\]","sliceSuccess":\["a","b"\],"sliceFailure":"\[0x[0-9a-f]+\]"}`)
 
 		le := NewBuilder(DebugLevel, buf).
 			SetTimestampZone(time.UTC).
@@ -211,10 +227,18 @@ func TestLogEntry(t *testing.T) {
 			Any("uint16", uint16(1)).
 			Any("uint32", uint32(123456789)).
 			Any("uint64", uint64(123456789)).
+			Any("jsonSuccess", &testJSONMarshaler{MockMarshalJSON: func() ([]byte, error) { return []byte(`{"json":true}`), nil }}).
+			Any("jsonFailure", &testJSONMarshaler{MockMarshalJSON: func() ([]byte, error) { return nil, io.ErrUnexpectedEOF }}).
+			Any("jsonNull", (*testJSONMarshaler)(nil)).
 			Any("fmt.Formatter", &testFormatter{}).
 			Any("fmt.Stringer", testStringer("testStringer")).
-			Any("fmt.Stringer2", (*testStringer)(nil)).
-			Any("func", func() {})
+			Any("fmt.StringerNull", (*testStringer)(nil)).
+			Any("func", func() {}).
+			// Any("sliceSuccess", []string{"a", "b"}).
+			Any("mapSuccess", map[string]interface{}{"map": map[string]interface{}{"in": 1}}).
+			Any("mapFailure", map[string]interface{}{"map": func() {}}).
+			Any("sliceSuccess", []string{"a", "b"}).
+			Any("sliceFailure", []func(){func() {}})
 
 		if expected, actual := ErrLogEntryIsNotWritten.Error(), le.Error(); expected != actual {
 			t.Errorf("❌: expected(%s) != actual(%s)", expected, actual)

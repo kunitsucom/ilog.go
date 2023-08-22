@@ -6,10 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kunitsucom/ilog.go"
-	ilogzap "github.com/kunitsucom/ilog.go/implementations/zap"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	"github.com/kunitsucom/ilog.go"
+	ilogzap "github.com/kunitsucom/ilog.go/implementations/zap"
 )
 
 func TestNew(t *testing.T) {

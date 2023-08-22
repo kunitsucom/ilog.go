@@ -1,6 +1,7 @@
 package ilog
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"math"
@@ -48,6 +49,7 @@ type implLogger struct {
 	fields []byte
 }
 
+// NewBuilder returns a new Builder of ilog.Logger with the specified level and writer.
 func NewBuilder(level Level, w io.Writer) implLoggerConfig { //nolint:revive
 	return implLoggerConfig{
 		levelKey:        "severity",
@@ -65,51 +67,74 @@ func NewBuilder(level Level, w io.Writer) implLoggerConfig { //nolint:revive
 	}
 }
 
+// SetLevelKey sets the key of the level field of the logger.
+// If empty, the level field is not output.
+// Default is "severity".
 func (c implLoggerConfig) SetLevelKey(key string) implLoggerConfig { //nolint:revive
 	c.levelKey = key
 	return c
 }
 
+// SetLevel sets the level of the logger.
 func (c implLoggerConfig) SetLevels(levels map[Level]string) implLoggerConfig { //nolint:revive
 	c.levels = levels
 	return c
 }
 
+// SetTimestampKey sets the key of the timestamp field of the logger.
+// If empty, the timestamp field is not output.
+// Default is "timestamp".
 func (c implLoggerConfig) SetTimestampKey(key string) implLoggerConfig { //nolint:revive
 	c.timestampKey = key
 	return c
 }
 
+// SetTimestampFormat sets the format of the timestamp field of the logger.
+// Default is time.RFC3339Nano.
 func (c implLoggerConfig) SetTimestampFormat(format string) implLoggerConfig { //nolint:revive
 	c.timestampFormat = format
 	return c
 }
 
+// SetTimestampZone sets the time zone of the timestamp field of the logger.
+// Default is time.Local.
 func (c implLoggerConfig) SetTimestampZone(zone *time.Location) implLoggerConfig { //nolint:revive
 	c.timestampZone = zone
 	return c
 }
 
+// SetCallerKey sets the key of the caller field of the logger.
+// If empty, the caller field is not output.
+// Default is "caller".
 func (c implLoggerConfig) SetCallerKey(key string) implLoggerConfig { //nolint:revive
 	c.callerKey = key
 	return c
 }
 
-func (c implLoggerConfig) UseShortCaller(useShortCaller bool) implLoggerConfig { //nolint:revive
-	c.useLongCaller = !useShortCaller
+// UseLongCaller sets whether to use long caller of the logger.
+// If true, the long caller is used.
+// Default caller is short caller.
+func (c implLoggerConfig) UseLongCaller(useLongCaller bool) implLoggerConfig { //nolint:revive
+	c.useLongCaller = useLongCaller
 	return c
 }
 
+// SetMessageKey sets the key of the message field of the logger.
+// If empty, the message field is not output.
+// Default is "message".
 func (c implLoggerConfig) SetMessageKey(key string) implLoggerConfig { //nolint:revive
 	c.messageKey = key
 	return c
 }
 
+// SetSeparator sets the log entry separator.
+// Default is "\n".
 func (c implLoggerConfig) SetSeparator(separator string) implLoggerConfig { //nolint:revive
 	c.separator = separator
 	return c
 }
 
+// Build returns a new ilog.Logger with the specified configuration.
 func (c implLoggerConfig) Build() Logger {
 	return &implLogger{
 		config: c,
@@ -261,7 +286,7 @@ func (e *implLogEntry) null(key string) LogEntry {
 }
 
 //nolint:cyclop,funlen
-func (e *implLogEntry) Any(key string, value interface{}) LogEntry {
+func (e *implLogEntry) Any(key string, value interface{}) (le LogEntry) {
 	switch v := value.(type) {
 	case bool:
 		return e.Bool(key, v)
@@ -307,18 +332,40 @@ func (e *implLogEntry) Any(key string, value interface{}) LogEntry {
 		return e.Uint32(key, v)
 	case uint64:
 		return e.Uint64(key, v)
+	case json.Marshaler:
+		defer func() {
+			if p := recover(); p != nil {
+				le = e.null(key)
+			}
+		}()
+		// NOTE: Even if v is nil, it is not judged as nil because it has type information. Calling v.MarshalJSON() causes panic.
+		b, err := v.MarshalJSON()
+		if err != nil {
+			return e.ErrWithKey(key, fmt.Errorf("json.Marshaler: v.MarshalJSON: %w", err))
+		}
+		e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
+		e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, b...)
+		e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, ',')
+		return e
 	case fmt.Formatter:
 		return e.String(key, fmt.Sprintf("%+v", v))
 	case fmt.Stringer:
+		defer func() {
+			if p := recover(); p != nil {
+				le = e.null(key)
+			}
+		}()
 		// NOTE: Even if v is nil, it is not judged as nil because it has type information. Calling v.String() causes panic.
-		// if v != nil {
-		// 	return w.String(key, v.String())
-		// } else {
-		// 	return w.null(key)
-		// }
-		return e.String(key, fmt.Sprintf("%s", v)) //nolint:gosimple
+		return e.String(key, v.String())
 	default:
-		return e.String(key, fmt.Sprintf("%v", v))
+		b, err := json.Marshal(v)
+		if err != nil {
+			return e.String(key, fmt.Sprintf("%v", v))
+		}
+		e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
+		e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, b...)
+		e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, ',')
+		return e
 	}
 }
 

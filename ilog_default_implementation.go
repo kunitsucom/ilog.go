@@ -396,23 +396,25 @@ func (e *implLogEntry) Err(err error) LogEntry {
 	return e.ErrWithKey("error", err)
 }
 
-func (e *implLogEntry) ErrWithKey(key string, err error) LogEntry {
-	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
+func (e *implLogEntry) ErrWithKey(key string, err error) (le LogEntry) {
+	defer func() {
+		if p := recover(); p != nil {
+			le = e.null(key)
+		}
+	}()
+
 	// NOTE: Even if err is your unique error type and nil, it is not judged as nil because it has type information. Calling err.Error() causes panic.
-	// if err != nil {
+	var v string
 	formatter, ok := err.(fmt.Formatter) //nolint:errorlint
 	if ok && formatter != nil {
-		e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, '"')
-		e.bytesBuffer.bytes = appendJSONEscapedString(e.bytesBuffer.bytes, fmt.Sprintf("%+v", formatter))
-		e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, '"')
+		v = fmt.Sprintf("%+v", formatter)
 	} else {
-		e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, '"')
-		e.bytesBuffer.bytes = appendJSONEscapedString(e.bytesBuffer.bytes, err.Error())
-		e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, '"')
+		v = err.Error()
 	}
-	// } else {
-	// 	w.bytesBuffer.bytes = append(w.bytesBuffer.bytes, null...)
-	// }
+	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
+	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, '"')
+	e.bytesBuffer.bytes = appendJSONEscapedString(e.bytesBuffer.bytes, v)
+	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, '"')
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, ',')
 	return e
 }

@@ -9,7 +9,7 @@ const contextKeyLogger contextKey = "Logger"
 func FromContext(ctx context.Context) (logger Logger) {
 	if ctx == nil {
 		Global().Copy().AddCallerSkip(1).Errorf("ilog: nil context")
-		return Global()
+		return Global().Copy()
 	}
 
 	v := ctx.Value(contextKeyLogger)
@@ -17,10 +17,10 @@ func FromContext(ctx context.Context) (logger Logger) {
 
 	if !ok {
 		Global().Copy().AddCallerSkip(1).Errorf("ilog: type assertion failed: expected=ilog.Logger, actual=%T, value=%#v", v, v)
-		return Global()
+		return Global().Copy()
 	}
 
-	return l
+	return l.Copy()
 }
 
 func WithContext(ctx context.Context, logger Logger) context.Context {

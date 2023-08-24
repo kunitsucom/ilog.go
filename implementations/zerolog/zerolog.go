@@ -25,14 +25,16 @@ func (l *implLogger) Level() ilog.Level {
 }
 
 func (l *implLogger) SetLevel(level ilog.Level) ilog.Logger {
-	l.level = level
-	return l
+	copied := l.copy()
+	copied.level = level
+	return copied
 }
 
 func (l *implLogger) AddCallerSkip(skip int) ilog.Logger {
+	copied := l.copy()
 	logger := l.zerologLogger.With().Caller().CallerWithSkipFrameCount(skip).Logger()
-	l.zerologLogger = &logger
-	return l
+	copied.zerologLogger = &logger
+	return copied
 }
 
 func (l *implLogger) Copy() ilog.Logger {

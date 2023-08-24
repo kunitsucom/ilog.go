@@ -147,13 +147,15 @@ func (l *implLogger) Level() Level {
 }
 
 func (l *implLogger) SetLevel(level Level) Logger {
-	l.config.level = level
-	return l
+	copied := l.copy()
+	copied.config.level = level
+	return copied
 }
 
 func (l *implLogger) AddCallerSkip(skip int) Logger {
-	l.config.callerSkip += skip
-	return l
+	copied := l.copy()
+	copied.config.callerSkip += skip
+	return copied
 }
 
 func (l *implLogger) Copy() Logger {

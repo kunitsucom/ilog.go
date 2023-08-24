@@ -26,11 +26,11 @@ type Logger interface {
 	// Level returns the current logging level of the logger.
 	Level() (currentLoggerLevel Level)
 	// SetLevel sets the logging level of the logger.
-	SetLevel(level Level) (logger Logger)
+	SetLevel(level Level) (copied Logger)
 	// AddCallerSkip adds the number of stack frames to skip to the logger.
-	AddCallerSkip(skip int) (logger Logger)
+	AddCallerSkip(skip int) (copied Logger)
 	// Copy returns a copy of the logger.
-	Copy() (copiedLogger Logger)
+	Copy() (copied Logger)
 
 	// Common is the interface that has the common logging methods for both ilog.Logger and ilog.LogEntry.
 	Common
@@ -84,7 +84,7 @@ type LogEntry interface {
 	Common
 
 	// Logger returns a new logger with the same fields of the log entry.
-	Logger() (copiedLogger Logger)
+	Logger() (copied Logger)
 
 	// error: for considering undispatched LogEntry as error so that they can be detected by Go static analysis.
 	error

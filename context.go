@@ -2,9 +2,7 @@ package ilog
 
 import "context"
 
-type contextKey string
-
-const contextKeyLogger contextKey = "Logger"
+type contextKeyLogger struct{}
 
 func FromContext(ctx context.Context) (logger Logger) {
 	if ctx == nil {
@@ -12,7 +10,7 @@ func FromContext(ctx context.Context) (logger Logger) {
 		return Global().Copy()
 	}
 
-	v := ctx.Value(contextKeyLogger)
+	v := ctx.Value(contextKeyLogger{})
 	l, ok := v.(Logger)
 
 	if !ok {
@@ -24,5 +22,5 @@ func FromContext(ctx context.Context) (logger Logger) {
 }
 
 func WithContext(ctx context.Context, logger Logger) context.Context {
-	return context.WithValue(ctx, contextKeyLogger, logger)
+	return context.WithValue(ctx, contextKeyLogger{}, logger)
 }

@@ -35,7 +35,7 @@ func TestContext(t *testing.T) {
 	t.Run("failure,invalidType", func(t *testing.T) {
 		buf := bytes.NewBuffer(nil)
 		defer SetGlobal(NewBuilder(DebugLevel, buf).SetTimestampZone(time.UTC).Build())()
-		_ = FromContext(context.WithValue(context.Background(), contextKeyLogger, "invalid")) //nolint:staticcheck
+		_ = FromContext(context.WithValue(context.Background(), contextKeyLogger{}, "invalid")) //nolint:staticcheck
 		if expected := regexp.MustCompilePOSIX(`{"severity":"ERROR","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+\.go:[0-9]+","message":"ilog: type assertion failed: expected=ilog.Logger, actual=string, value=\\"invalid\\""}`); !expected.Match(buf.Bytes()) {
 			t.Errorf("❌: !expected.Match(buf.Bytes()):\n%s", buf)
 		}

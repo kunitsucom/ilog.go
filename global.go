@@ -8,23 +8,22 @@ import (
 
 //nolint:gochecknoglobals
 var (
-	globalLogger   Logger = NewBuilder(DebugLevel, os.Stdout).Build() //nolint:revive
-	globalLoggerMu sync.RWMutex
+	_globalLogger   Logger = NewBuilder(DebugLevel, os.Stdout).Build() //nolint:revive
+	_globalLoggerMu sync.RWMutex
 )
 
 func Global() Logger {
-	globalLoggerMu.RLock()
-	defer globalLoggerMu.RUnlock()
-	return globalLogger
+	_globalLoggerMu.RLock()
+	l := _globalLogger
+	_globalLoggerMu.RUnlock()
+	return l
 }
 
 func SetGlobal(logger Logger) (rollback func()) {
-	globalLoggerMu.Lock()
-	defer globalLoggerMu.Unlock()
-	backup := globalLogger
-
-	globalLogger = logger
-
+	_globalLoggerMu.Lock()
+	backup := _globalLogger
+	_globalLogger = logger
+	_globalLoggerMu.Unlock()
 	return func() {
 		SetGlobal(backup)
 	}

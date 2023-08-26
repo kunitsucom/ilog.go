@@ -4,7 +4,6 @@ package ilog
 
 import (
 	"errors"
-	"io"
 	"time"
 )
 
@@ -32,12 +31,12 @@ type Logger interface {
 	// Copy returns a copy of the logger.
 	Copy() (copied Logger)
 
-	// Common is the interface that has the common logging methods for both ilog.Logger and ilog.LogEntry.
-	Common
+	// common is the interface that has the common logging methods for both ilog.Logger and ilog.LogEntry.
+	common
 }
 
-// Common is the interface that has the common logging methods for both ilog.Logger and ilog.LogEntry.
-type Common interface {
+// common is the interface that has the common logging methods for both ilog.Logger and ilog.LogEntry.
+type common interface {
 	Any(key string, value interface{}) (entry LogEntry)
 	Bool(key string, value bool) (entry LogEntry)
 	Bytes(key string, value []byte) (entry LogEntry)
@@ -75,13 +74,16 @@ type Common interface {
 	// If the argument is one, it is treated 1st argument as a simple string.
 	// If the argument is more than one, it is treated 1st argument as a format string.
 	Logf(level Level, format string, args ...interface{})
-	io.Writer
+
+	// Write implements io.Writer interface.
+	// It outputs logs at the logger's log level.
+	Write(p []byte) (n int, err error)
 }
 
 // LogEntry is the interface that has the logging methods for a single log entry.
 type LogEntry interface {
-	// Common is the interface that has the common logging methods for both ilog.Logger and ilog.LogEntry.
-	Common
+	// common is the interface that has the common logging methods for both ilog.Logger and ilog.LogEntry.
+	common
 
 	// Logger returns a new logger with the same fields of the log entry.
 	Logger() (copied Logger)

@@ -12,11 +12,15 @@ var (
 	_globalLoggerMu sync.RWMutex
 )
 
-func Global() Logger {
+func L() Logger {
 	_globalLoggerMu.RLock()
 	l := _globalLogger
 	_globalLoggerMu.RUnlock()
 	return l
+}
+
+func Global() Logger {
+	return L()
 }
 
 func SetGlobal(logger Logger) (rollback func()) {

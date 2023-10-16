@@ -120,14 +120,14 @@ func TestLogger(t *testing.T) {
 		buf := bytes.NewBuffer(nil)
 		defer t.Logf("ℹ️: buf:\n%s", buf)
 
-		expected := regexp.MustCompilePOSIX(`{"level":"DEBUG","time":"[A-Z][a-z]+ [A-Z][a-z]+ [0-9]{1,2} [0-9]{2}:[0-9]{2}:[0-9]{2} UTC [0-9]{4}","file":".+/ilog\.go/[a-z_]+_test\.go:[0-9]+","msg":"Logf"}` + "\r\n")
+		expected := regexp.MustCompilePOSIX(`{"level":"DEBUG","time":"[0-9]+-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}","file":".+/ilog\.go/[a-z_]+_test\.go:[0-9]+","msg":"Logf"}` + "\r\n")
 
 		const expectedLevel = DebugLevel
 		l := NewBuilder(ErrorLevel, buf).
 			SetLevelKey("level").
 			SetLevels(copyLevels(defaultLevels)).
 			SetTimestampKey("time").
-			SetTimestampFormat(time.UnixDate).
+			SetTimestampFormat("2006-01-02 15:04:05").
 			SetTimestampZone(time.UTC).
 			SetCallerKey("file").
 			UseLongCaller(true).

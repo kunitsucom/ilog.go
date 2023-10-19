@@ -3,7 +3,7 @@ module github.com/kunitsucom/ilog.go/implementations/zerolog
 go 1.21.0
 
 require (
-	github.com/kunitsucom/ilog.go v0.0.1-rc.8
+	github.com/kunitsucom/ilog.go v0.0.1-rc.10
 	github.com/rs/zerolog v1.31.0
 )
 

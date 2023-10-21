@@ -49,19 +49,27 @@ type implLogger struct {
 	fields []byte
 }
 
-type syncWriter struct {
+type syncWriter interface {
+	io.Writer
+	Lock()
+	Unlock()
+}
+
+type _syncWriter struct {
 	mu sync.Mutex
 	w  io.Writer
 }
 
-func (w *syncWriter) Write(p []byte) (int, error) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
+func (w *_syncWriter) Write(p []byte) (int, error) {
+	w.Lock()
+	defer w.Unlock()
 	return w.w.Write(p) //nolint:wrapcheck
 }
+func (w *_syncWriter) Lock()   { w.mu.Lock() }
+func (w *_syncWriter) Unlock() { w.mu.Unlock() }
 
 func NewSyncWriter(w io.Writer) io.Writer {
-	return &syncWriter{w: w}
+	return &_syncWriter{w: w}
 }
 
 // NewBuilder returns a new Builder of ilog.Logger with the specified level and writer.
@@ -146,6 +154,18 @@ func (c implLoggerConfig) SetMessageKey(key string) implLoggerConfig { //nolint:
 // Default is "\n".
 func (c implLoggerConfig) SetSeparator(separator string) implLoggerConfig { //nolint:revive
 	c.separator = separator
+	return c
+}
+
+// UseSyncWriter sets whether to use sync writer of the logger.
+func (c implLoggerConfig) UseSyncWriter() implLoggerConfig { //nolint:revive
+	switch v := c.writer.(type) {
+	case syncWriter:
+		c.writer = v
+	default:
+		c.writer = NewSyncWriter(c.writer)
+	}
+
 	return c
 }
 

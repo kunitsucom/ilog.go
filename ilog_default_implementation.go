@@ -49,6 +49,25 @@ type implLogger struct {
 	fields []byte
 }
 
+type syncWriter struct {
+	mu sync.Mutex
+	w  io.Writer
+}
+
+func (w *syncWriter) Write(p []byte) (int, error) {
+	w.Lock()
+	defer w.Unlock()
+	return w.w.Write(p) //nolint:wrapcheck
+}
+func (w *syncWriter) Lock()   { w.mu.Lock() }
+func (w *syncWriter) Unlock() { w.mu.Unlock() }
+
+func NewSyncWriter(w io.Writer) io.Writer {
+	return &syncWriter{
+		w: w,
+	}
+}
+
 // NewBuilder returns a new Builder of ilog.Logger with the specified level and writer.
 func NewBuilder(level Level, w io.Writer) implLoggerConfig { //nolint:revive
 	return implLoggerConfig{

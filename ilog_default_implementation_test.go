@@ -45,7 +45,7 @@ func TestScenario(t *testing.T) {
 
 		expected := regexp.MustCompilePOSIX(`{"severity":"DEBUG","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"Logf: format string","bool":true,"boolPointer":false,"boolPointer2":null,"byte":"\\u0001","bytes":"bytes","time\.Duration":"1h1m1.001001001s","error":"ilog: log entry not written","errorFormatter":"ilog: log entry not written","errorNil":null,"float32":1\.234567,"float64":1\.23456789,"float64NaN":"NaN","float64\+Inf":"\+Inf","float64-Inf":"-Inf","int":-1,"int8":-1,"int16":-1,"int32":123456789,"int64":123456789,"string":"string","stringEscaped":"\\b\\f\\n\\r\\t","time\.Time":"2023-08-13T04:38:39\.123456789\+09:00","uint":1,"uint16":1,"uint32":123456789,"uint64":123456789,"jsonSuccess":{"json":true},"jsonFailure":"json.Marshaler: v.MarshalJSON: unexpected EOF","jsonNull":null,"fmt\.Formatter":"testFormatter","fmt\.Stringer":"testStringer","fmt.StringerNull":null,"func":"0x[0-9a-f]+","mapSuccess":{"map":{"in":1}},"mapFailure":"map\[map:0x[0-9a-f]+\]","sliceSuccess":\["a","b"\],"sliceFailure":"\[0x[0-9a-f]+\]","append":"logger"}`)
 
-		l := NewBuilder(DebugLevel, buf).
+		l := NewBuilder(DebugLevel, NewSyncWriter(buf)).
 			SetTimestampZone(time.UTC).
 			Build().
 			Any("bool", true).
@@ -123,7 +123,7 @@ func TestLogger(t *testing.T) {
 		expected := regexp.MustCompilePOSIX(`{"level":"DEBUG","time":"[0-9]+-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}","file":".+/ilog\.go/[a-z_]+_test\.go:[0-9]+","msg":"Logf"}` + "\r\n")
 
 		const expectedLevel = DebugLevel
-		l := NewBuilder(ErrorLevel, buf).
+		l := NewBuilder(ErrorLevel, NewSyncWriter(buf)).
 			SetLevelKey("level").
 			SetLevels(copyLevels(defaultLevels)).
 			SetTimestampKey("time").
@@ -153,7 +153,7 @@ func TestLogger(t *testing.T) {
 		buf := bytes.NewBuffer(nil)
 		defer t.Logf("ℹ️: buf:\n%s", buf)
 
-		l := NewBuilder(DebugLevel, buf).SetTimestampKey("").SetCallerKey("").Build()
+		l := NewBuilder(DebugLevel, NewSyncWriter(buf)).SetTimestampKey("").SetCallerKey("").Build()
 		l.Any("any", "any").Debugf("Debugf")
 		l.Bool("bool", true).Debugf("Debugf")
 		l.Bytes("bytes", []byte("bytes")).Debugf("Debugf")
@@ -234,7 +234,7 @@ func TestLogEntry(t *testing.T) {
 
 		expected := regexp.MustCompilePOSIX(`{"severity":"DEBUG","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"Logf: format string","bool":true,"boolPointer":false,"boolPointer2":null,"byte":"\\u0001","bytes":"bytes","time\.Duration":"1h1m1.001001001s","error":"ilog: log entry not written","errorFormatter":"ilog: log entry not written","errorNil":null,"float32":1\.234567,"float64":1\.23456789,"float64NaN":"NaN","float64\+Inf":"\+Inf","float64-Inf":"-Inf","int":-1,"int8":-1,"int16":-1,"int32":123456789,"int64":123456789,"string":"string","stringEscaped":"\\b\\f\\n\\r\\t","time\.Time":"2023-08-13T04:38:39\.123456789\+09:00","uint":1,"uint16":1,"uint32":123456789,"uint64":123456789,"jsonSuccess":{"json":true},"jsonFailure":"json.Marshaler: v.MarshalJSON: unexpected EOF","jsonNull":null,"fmt\.Formatter":"testFormatter","fmt\.Stringer":"testStringer","fmt.StringerNull":null,"func":"0x[0-9a-f]+","mapSuccess":{"map":{"in":1}},"mapFailure":"map\[map:0x[0-9a-f]+\]","sliceSuccess":\["a","b"\],"sliceFailure":"\[0x[0-9a-f]+\]"}`)
 
-		le := NewBuilder(DebugLevel, buf).
+		le := NewBuilder(DebugLevel, NewSyncWriter(buf)).
 			SetTimestampZone(time.UTC).
 			Build().
 			Any("bool", true).
@@ -292,7 +292,7 @@ func TestLogEntry(t *testing.T) {
 
 		expected := regexp.MustCompilePOSIX(`{"severity":"DEBUG","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"default"}`)
 
-		NewBuilder(-128, buf).SetTimestampZone(time.UTC).Build().Logf(-128, "default")
+		NewBuilder(-128, NewSyncWriter(buf)).SetTimestampZone(time.UTC).Build().Logf(-128, "default")
 
 		if !expected.Match(buf.Bytes()) {
 			t.Errorf("❌: !expected.Match(buf.Bytes()):\n%s", buf)
@@ -306,7 +306,7 @@ func TestLogEntry(t *testing.T) {
 
 		expected := regexp.MustCompilePOSIX(`{"severity":"DEBUG","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"Debugf"}`)
 
-		NewBuilder(DebugLevel, buf).SetTimestampZone(time.UTC).Build().Debugf("Debugf")
+		NewBuilder(DebugLevel, NewSyncWriter(buf)).SetTimestampZone(time.UTC).Build().Debugf("Debugf")
 
 		if !expected.Match(buf.Bytes()) {
 			t.Errorf("❌: !expected.Match(buf.Bytes()):\n%s", buf)
@@ -320,7 +320,7 @@ func TestLogEntry(t *testing.T) {
 
 		expected := regexp.MustCompilePOSIX(`{"severity":"INFO","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"Infof"}`)
 
-		NewBuilder(DebugLevel, buf).SetTimestampZone(time.UTC).Build().Infof("Infof")
+		NewBuilder(DebugLevel, NewSyncWriter(buf)).SetTimestampZone(time.UTC).Build().Infof("Infof")
 
 		if !expected.Match(buf.Bytes()) {
 			t.Errorf("❌: !expected.Match(buf.Bytes()):\n%s", buf)
@@ -334,7 +334,7 @@ func TestLogEntry(t *testing.T) {
 
 		expected := regexp.MustCompilePOSIX(`{"severity":"WARN","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"Warnf"}`)
 
-		NewBuilder(DebugLevel, buf).SetTimestampZone(time.UTC).Build().Warnf("Warnf")
+		NewBuilder(DebugLevel, NewSyncWriter(buf)).SetTimestampZone(time.UTC).Build().Warnf("Warnf")
 
 		if !expected.Match(buf.Bytes()) {
 			t.Errorf("❌: !expected.Match(buf.Bytes()):\n%s", buf)
@@ -348,7 +348,7 @@ func TestLogEntry(t *testing.T) {
 
 		expected := regexp.MustCompilePOSIX(`{"severity":"ERROR","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"Errorf"}`)
 
-		NewBuilder(DebugLevel, buf).SetTimestampZone(time.UTC).Build().Errorf("Errorf")
+		NewBuilder(DebugLevel, NewSyncWriter(buf)).SetTimestampZone(time.UTC).Build().Errorf("Errorf")
 
 		if !expected.Match(buf.Bytes()) {
 			t.Errorf("❌: !expected.Match(buf.Bytes()):\n%s", buf)
@@ -364,19 +364,19 @@ func TestLogger_logf(t *testing.T) {
 
 		const expected = ""
 
-		NewBuilder(InfoLevel, buf).SetTimestampZone(time.UTC).Build().Debugf("Debugf")
+		NewBuilder(InfoLevel, NewSyncWriter(buf)).SetTimestampZone(time.UTC).Build().Debugf("Debugf")
 		if expected != buf.String() {
 			t.Errorf("❌: expected(%s) != actual(%s)", expected, buf.String())
 		}
 		buf.Reset()
 
-		NewBuilder(WarnLevel, buf).SetTimestampZone(time.UTC).Build().Infof("Infof")
+		NewBuilder(WarnLevel, NewSyncWriter(buf)).SetTimestampZone(time.UTC).Build().Infof("Infof")
 		if expected != buf.String() {
 			t.Errorf("❌: expected(%s) != actual(%s)", expected, buf.String())
 		}
 		buf.Reset()
 
-		NewBuilder(ErrorLevel, buf).SetTimestampZone(time.UTC).Build().Warnf("Warnf")
+		NewBuilder(ErrorLevel, NewSyncWriter(buf)).SetTimestampZone(time.UTC).Build().Warnf("Warnf")
 		if expected != buf.String() {
 			t.Errorf("❌: expected(%s) != actual(%s)", expected, buf.String())
 		}
@@ -390,7 +390,7 @@ func TestLogger_logf(t *testing.T) {
 
 		const expected = "{}\n"
 
-		NewBuilder(DebugLevel, buf).
+		NewBuilder(DebugLevel, NewSyncWriter(buf)).
 			SetLevelKey("").
 			SetTimestampKey("").
 			SetCallerKey("").
@@ -417,7 +417,7 @@ func TestLogger_Write(t *testing.T) {
 		buf := bytes.NewBuffer(nil)
 		defer t.Logf("ℹ️: buf:\n%s", buf)
 
-		defer SetGlobal(NewBuilder(DebugLevel, buf).SetTimestampZone(time.UTC).Build())()
+		defer SetGlobal(NewBuilder(DebugLevel, NewSyncWriter(buf)).SetTimestampZone(time.UTC).Build())()
 
 		i, err := NewBuilder(DebugLevel, &testWriter{err: io.ErrUnexpectedEOF}).SetTimestampZone(time.UTC).Build().Write([]byte("ERROR"))
 		if expected := regexp.MustCompilePOSIX(`w.logf: w.logger.writer.Write: p={"severity":"DEBUG","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"ERROR"}: unexpected EOF`); err == nil || !expected.MatchString(err.Error()) {
@@ -435,7 +435,7 @@ func TestLogger_Write(t *testing.T) {
 		buf := bytes.NewBuffer(nil)
 		defer t.Logf("ℹ️: buf:\n%s", buf)
 
-		defer SetGlobal(NewBuilder(DebugLevel, buf).SetTimestampZone(time.UTC).Build())()
+		defer SetGlobal(NewBuilder(DebugLevel, NewSyncWriter(buf)).SetTimestampZone(time.UTC).Build())()
 
 		i, err := NewBuilder(DebugLevel, &testWriter{err: io.ErrUnexpectedEOF}).SetTimestampZone(time.UTC).Build().Any("any", "any").Write([]byte("ERROR"))
 		if expected := regexp.MustCompilePOSIX(`w.logf: w.logger.writer.Write: p={"severity":"DEBUG","timestamp":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.?[0-9]*Z","caller":"ilog\.go/[a-z_]+_test\.go:[0-9]+","message":"ERROR","any":"any"}: unexpected EOF`); err == nil || !expected.MatchString(err.Error()) {

@@ -46,7 +46,8 @@ func SetStdLogger(l Logger) (rollback func()) {
 
 	log.SetFlags(0)
 	log.SetPrefix("")
-	log.SetOutput(l.Copy().AddCallerSkip(2))
+	const skipForStgLogger = 2
+	log.SetOutput(l.Copy().AddCallerSkip(skipForStgLogger))
 
 	return func() {
 		log.SetFlags(backupFlags)

@@ -74,6 +74,7 @@ func NewSyncWriter(w io.Writer) io.Writer {
 
 // NewBuilder returns a new Builder of ilog.Logger with the specified level and writer.
 func NewBuilder(level Level, w io.Writer) implLoggerConfig { //nolint:revive
+	const defaultCallerSkip = 4
 	return implLoggerConfig{
 		levelKey:        "severity",
 		level:           level,
@@ -82,7 +83,7 @@ func NewBuilder(level Level, w io.Writer) implLoggerConfig { //nolint:revive
 		timestampFormat: time.RFC3339Nano,
 		timestampZone:   time.Local, //nolint:gosmopolitan
 		callerKey:       "caller",
-		callerSkip:      4,
+		callerSkip:      defaultCallerSkip,
 		useLongCaller:   false,
 		messageKey:      "message",
 		separator:       "\n",
@@ -171,9 +172,10 @@ func (c implLoggerConfig) UseSyncWriter() implLoggerConfig { //nolint:revive
 
 // Build returns a new ilog.Logger with the specified configuration.
 func (c implLoggerConfig) Build() Logger {
+	const fieldsCap = 1024
 	return &implLogger{
 		config: c,
-		fields: make([]byte, 0, 1024),
+		fields: make([]byte, 0, fieldsCap),
 	}
 }
 
@@ -458,35 +460,40 @@ func (e *implLogEntry) ErrWithKey(key string, err error) (le LogEntry) {
 
 func (e *implLogEntry) Float32(key string, value float32) LogEntry {
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
-	e.bytesBuffer.bytes = appendFloatFieldValue(e.bytesBuffer.bytes, float64(value), 32)
+	const bitSize = 32
+	e.bytesBuffer.bytes = appendFloatFieldValue(e.bytesBuffer.bytes, float64(value), bitSize)
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, ',')
 	return e
 }
 
 func (e *implLogEntry) Float64(key string, value float64) LogEntry {
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
-	e.bytesBuffer.bytes = appendFloatFieldValue(e.bytesBuffer.bytes, value, 64)
+	const bitSize = 64
+	e.bytesBuffer.bytes = appendFloatFieldValue(e.bytesBuffer.bytes, value, bitSize)
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, ',')
 	return e
 }
 
 func (e *implLogEntry) Int(key string, value int) LogEntry {
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
-	e.bytesBuffer.bytes = strconv.AppendInt(e.bytesBuffer.bytes, int64(value), 10)
+	const base = 10
+	e.bytesBuffer.bytes = strconv.AppendInt(e.bytesBuffer.bytes, int64(value), base)
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, ',')
 	return e
 }
 
 func (e *implLogEntry) Int32(key string, value int32) LogEntry {
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
-	e.bytesBuffer.bytes = strconv.AppendInt(e.bytesBuffer.bytes, int64(value), 10)
+	const base = 10
+	e.bytesBuffer.bytes = strconv.AppendInt(e.bytesBuffer.bytes, int64(value), base)
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, ',')
 	return e
 }
 
 func (e *implLogEntry) Int64(key string, value int64) LogEntry {
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
-	e.bytesBuffer.bytes = strconv.AppendInt(e.bytesBuffer.bytes, value, 10)
+	const base = 10
+	e.bytesBuffer.bytes = strconv.AppendInt(e.bytesBuffer.bytes, value, base)
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, ',')
 	return e
 }
@@ -509,21 +516,24 @@ func (e *implLogEntry) Time(key string, value time.Time) LogEntry {
 
 func (e *implLogEntry) Uint(key string, value uint) LogEntry {
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
-	e.bytesBuffer.bytes = strconv.AppendUint(e.bytesBuffer.bytes, uint64(value), 10)
+	const base = 10
+	e.bytesBuffer.bytes = strconv.AppendUint(e.bytesBuffer.bytes, uint64(value), base)
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, ',')
 	return e
 }
 
 func (e *implLogEntry) Uint32(key string, value uint32) LogEntry {
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
-	e.bytesBuffer.bytes = strconv.AppendUint(e.bytesBuffer.bytes, uint64(value), 10)
+	const base = 10
+	e.bytesBuffer.bytes = strconv.AppendUint(e.bytesBuffer.bytes, uint64(value), base)
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, ',')
 	return e
 }
 
 func (e *implLogEntry) Uint64(key string, value uint64) LogEntry {
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
-	e.bytesBuffer.bytes = strconv.AppendUint(e.bytesBuffer.bytes, value, 10)
+	const base = 10
+	e.bytesBuffer.bytes = strconv.AppendUint(e.bytesBuffer.bytes, value, base)
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, ',')
 	return e
 }
@@ -635,8 +645,14 @@ type (
 
 // nolint: gochecknoglobals
 var (
-	_bufferPool   = &sync.Pool{New: func() interface{} { return &bytesBuffer{make([]byte, 0, 1024)} }}
-	_pcBufferPool = &sync.Pool{New: func() interface{} { return &pcBuffer{make([]uintptr, 64)} }} // NOTE: both len and cap are needed.
+	_bufferPool = &sync.Pool{New: func() interface{} {
+		const bufferCap = 1024
+		return &bytesBuffer{make([]byte, 0, bufferCap)}
+	}}
+	_pcBufferPool = &sync.Pool{New: func() interface{} {
+		const bufferCap = 64
+		return &pcBuffer{make([]uintptr, bufferCap)}
+	}} // NOTE: both len and cap are needed.
 )
 
 func getBytesBuffer() (buf *bytesBuffer, put func()) {
@@ -725,7 +741,8 @@ func appendCallerFromFrame(dst []byte, frame runtime.Frame, useLongCaller bool) 
 	}
 
 	dst = append(dst, ':')
-	dst = strconv.AppendInt(dst, int64(frame.Line), 10)
+	const base = 10
+	dst = strconv.AppendInt(dst, int64(frame.Line), base)
 
 	return dst
 }

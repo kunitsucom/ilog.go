@@ -171,7 +171,7 @@ func (c implLoggerConfig) UseSyncWriter() implLoggerConfig { //nolint:revive
 }
 
 // Build returns a new ilog.Logger with the specified configuration.
-func (c implLoggerConfig) Build() Logger {
+func (c implLoggerConfig) Build() Logger { //nolint:ireturn
 	const fieldsCap = 1024
 	return &implLogger{
 		config: c,
@@ -183,19 +183,19 @@ func (l *implLogger) Level() Level {
 	return l.config.level
 }
 
-func (l *implLogger) SetLevel(level Level) Logger {
+func (l *implLogger) SetLevel(level Level) Logger { //nolint:ireturn
 	copied := l.copy()
 	copied.config.level = level
 	return copied
 }
 
-func (l *implLogger) AddCallerSkip(skip int) Logger {
+func (l *implLogger) AddCallerSkip(skip int) Logger { //nolint:ireturn
 	copied := l.copy()
 	copied.config.callerSkip += skip
 	return copied
 }
 
-func (l *implLogger) Copy() Logger {
+func (l *implLogger) Copy() Logger { //nolint:ireturn
 	return l.copy()
 }
 
@@ -206,67 +206,67 @@ func (l *implLogger) copy() *implLogger {
 	return &copied
 }
 
-func (l *implLogger) Any(key string, value interface{}) LogEntry {
+func (l *implLogger) Any(key string, value interface{}) LogEntry { //nolint:ireturn
 	return l.new().Any(key, value)
 }
 
-func (l *implLogger) Bool(key string, value bool) LogEntry {
+func (l *implLogger) Bool(key string, value bool) LogEntry { //nolint:ireturn
 	return l.new().Bool(key, value)
 }
 
-func (l *implLogger) Bytes(key string, value []byte) LogEntry {
+func (l *implLogger) Bytes(key string, value []byte) LogEntry { //nolint:ireturn
 	return l.new().Bytes(key, value)
 }
 
-func (l *implLogger) Duration(key string, value time.Duration) LogEntry {
+func (l *implLogger) Duration(key string, value time.Duration) LogEntry { //nolint:ireturn
 	return l.new().Duration(key, value)
 }
 
-func (l *implLogger) Err(err error) LogEntry {
+func (l *implLogger) Err(err error) LogEntry { //nolint:ireturn
 	return l.new().Err(err)
 }
 
-func (l *implLogger) ErrWithKey(key string, err error) LogEntry {
+func (l *implLogger) ErrWithKey(key string, err error) LogEntry { //nolint:ireturn
 	return l.new().ErrWithKey(key, err)
 }
 
-func (l *implLogger) Float32(key string, value float32) LogEntry {
+func (l *implLogger) Float32(key string, value float32) LogEntry { //nolint:ireturn
 	return l.new().Float32(key, value)
 }
 
-func (l *implLogger) Float64(key string, value float64) LogEntry {
+func (l *implLogger) Float64(key string, value float64) LogEntry { //nolint:ireturn
 	return l.new().Float64(key, value)
 }
 
-func (l *implLogger) Int(key string, value int) LogEntry {
+func (l *implLogger) Int(key string, value int) LogEntry { //nolint:ireturn
 	return l.new().Int(key, value)
 }
 
-func (l *implLogger) Int32(key string, value int32) LogEntry {
+func (l *implLogger) Int32(key string, value int32) LogEntry { //nolint:ireturn
 	return l.new().Int32(key, value)
 }
 
-func (l *implLogger) Int64(key string, value int64) LogEntry {
+func (l *implLogger) Int64(key string, value int64) LogEntry { //nolint:ireturn
 	return l.new().Int64(key, value)
 }
 
-func (l *implLogger) String(key, value string) LogEntry {
+func (l *implLogger) String(key, value string) LogEntry { //nolint:ireturn
 	return l.new().String(key, value)
 }
 
-func (l *implLogger) Time(key string, value time.Time) LogEntry {
+func (l *implLogger) Time(key string, value time.Time) LogEntry { //nolint:ireturn
 	return l.new().Time(key, value)
 }
 
-func (l *implLogger) Uint(key string, value uint) LogEntry {
+func (l *implLogger) Uint(key string, value uint) LogEntry { //nolint:ireturn
 	return l.new().Uint(key, value)
 }
 
-func (l *implLogger) Uint32(key string, value uint32) LogEntry {
+func (l *implLogger) Uint32(key string, value uint32) LogEntry { //nolint:ireturn
 	return l.new().Uint32(key, value)
 }
 
-func (l *implLogger) Uint64(key string, value uint64) LogEntry {
+func (l *implLogger) Uint64(key string, value uint64) LogEntry { //nolint:ireturn
 	return l.new().Uint64(key, value)
 }
 
@@ -317,7 +317,7 @@ func (*implLogEntry) Error() string {
 	return ErrLogEntryIsNotWritten.Error()
 }
 
-func (e *implLogEntry) null(key string) LogEntry {
+func (e *implLogEntry) null(key string) LogEntry { //nolint:ireturn
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, null...)
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, ',')
@@ -325,7 +325,7 @@ func (e *implLogEntry) null(key string) LogEntry {
 }
 
 //nolint:cyclop,funlen
-func (e *implLogEntry) Any(key string, value interface{}) (le LogEntry) {
+func (e *implLogEntry) Any(key string, value interface{}) (le LogEntry) { //nolint:ireturn
 	switch v := value.(type) {
 	case bool:
 		return e.Bool(key, v)
@@ -408,14 +408,14 @@ func (e *implLogEntry) Any(key string, value interface{}) (le LogEntry) {
 	}
 }
 
-func (e *implLogEntry) Bool(key string, value bool) LogEntry {
+func (e *implLogEntry) Bool(key string, value bool) LogEntry { //nolint:ireturn
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
 	e.bytesBuffer.bytes = strconv.AppendBool(e.bytesBuffer.bytes, value)
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, ',')
 	return e
 }
 
-func (e *implLogEntry) Bytes(key string, value []byte) LogEntry {
+func (e *implLogEntry) Bytes(key string, value []byte) LogEntry { //nolint:ireturn
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, '"')
 	e.bytesBuffer.bytes = appendJSONEscapedString(e.bytesBuffer.bytes, string(value))
@@ -423,7 +423,7 @@ func (e *implLogEntry) Bytes(key string, value []byte) LogEntry {
 	return e
 }
 
-func (e *implLogEntry) Duration(key string, value time.Duration) LogEntry {
+func (e *implLogEntry) Duration(key string, value time.Duration) LogEntry { //nolint:ireturn
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, '"')
 	e.bytesBuffer.bytes = appendJSONEscapedString(e.bytesBuffer.bytes, value.String())
@@ -431,11 +431,11 @@ func (e *implLogEntry) Duration(key string, value time.Duration) LogEntry {
 	return e
 }
 
-func (e *implLogEntry) Err(err error) LogEntry {
+func (e *implLogEntry) Err(err error) LogEntry { //nolint:ireturn
 	return e.ErrWithKey("error", err)
 }
 
-func (e *implLogEntry) ErrWithKey(key string, err error) (le LogEntry) {
+func (e *implLogEntry) ErrWithKey(key string, err error) (le LogEntry) { //nolint:ireturn
 	defer func() {
 		if p := recover(); p != nil {
 			le = e.null(key)
@@ -458,7 +458,7 @@ func (e *implLogEntry) ErrWithKey(key string, err error) (le LogEntry) {
 	return e
 }
 
-func (e *implLogEntry) Float32(key string, value float32) LogEntry {
+func (e *implLogEntry) Float32(key string, value float32) LogEntry { //nolint:ireturn
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
 	const bitSize = 32
 	e.bytesBuffer.bytes = appendFloatFieldValue(e.bytesBuffer.bytes, float64(value), bitSize)
@@ -466,7 +466,7 @@ func (e *implLogEntry) Float32(key string, value float32) LogEntry {
 	return e
 }
 
-func (e *implLogEntry) Float64(key string, value float64) LogEntry {
+func (e *implLogEntry) Float64(key string, value float64) LogEntry { //nolint:ireturn
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
 	const bitSize = 64
 	e.bytesBuffer.bytes = appendFloatFieldValue(e.bytesBuffer.bytes, value, bitSize)
@@ -474,7 +474,7 @@ func (e *implLogEntry) Float64(key string, value float64) LogEntry {
 	return e
 }
 
-func (e *implLogEntry) Int(key string, value int) LogEntry {
+func (e *implLogEntry) Int(key string, value int) LogEntry { //nolint:ireturn
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
 	const base = 10
 	e.bytesBuffer.bytes = strconv.AppendInt(e.bytesBuffer.bytes, int64(value), base)
@@ -482,7 +482,7 @@ func (e *implLogEntry) Int(key string, value int) LogEntry {
 	return e
 }
 
-func (e *implLogEntry) Int32(key string, value int32) LogEntry {
+func (e *implLogEntry) Int32(key string, value int32) LogEntry { //nolint:ireturn
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
 	const base = 10
 	e.bytesBuffer.bytes = strconv.AppendInt(e.bytesBuffer.bytes, int64(value), base)
@@ -490,7 +490,7 @@ func (e *implLogEntry) Int32(key string, value int32) LogEntry {
 	return e
 }
 
-func (e *implLogEntry) Int64(key string, value int64) LogEntry {
+func (e *implLogEntry) Int64(key string, value int64) LogEntry { //nolint:ireturn
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
 	const base = 10
 	e.bytesBuffer.bytes = strconv.AppendInt(e.bytesBuffer.bytes, value, base)
@@ -498,7 +498,7 @@ func (e *implLogEntry) Int64(key string, value int64) LogEntry {
 	return e
 }
 
-func (e *implLogEntry) String(key string, value string) LogEntry {
+func (e *implLogEntry) String(key string, value string) LogEntry { //nolint:ireturn
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, '"')
 	e.bytesBuffer.bytes = appendJSONEscapedString(e.bytesBuffer.bytes, value)
@@ -506,7 +506,7 @@ func (e *implLogEntry) String(key string, value string) LogEntry {
 	return e
 }
 
-func (e *implLogEntry) Time(key string, value time.Time) LogEntry {
+func (e *implLogEntry) Time(key string, value time.Time) LogEntry { //nolint:ireturn
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
 	e.bytesBuffer.bytes = append(e.bytesBuffer.bytes, '"')
 	e.bytesBuffer.bytes = appendJSONEscapedString(e.bytesBuffer.bytes, value.Format(e.logger.config.timestampFormat))
@@ -514,7 +514,7 @@ func (e *implLogEntry) Time(key string, value time.Time) LogEntry {
 	return e
 }
 
-func (e *implLogEntry) Uint(key string, value uint) LogEntry {
+func (e *implLogEntry) Uint(key string, value uint) LogEntry { //nolint:ireturn
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
 	const base = 10
 	e.bytesBuffer.bytes = strconv.AppendUint(e.bytesBuffer.bytes, uint64(value), base)
@@ -522,7 +522,7 @@ func (e *implLogEntry) Uint(key string, value uint) LogEntry {
 	return e
 }
 
-func (e *implLogEntry) Uint32(key string, value uint32) LogEntry {
+func (e *implLogEntry) Uint32(key string, value uint32) LogEntry { //nolint:ireturn
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
 	const base = 10
 	e.bytesBuffer.bytes = strconv.AppendUint(e.bytesBuffer.bytes, uint64(value), base)
@@ -530,7 +530,7 @@ func (e *implLogEntry) Uint32(key string, value uint32) LogEntry {
 	return e
 }
 
-func (e *implLogEntry) Uint64(key string, value uint64) LogEntry {
+func (e *implLogEntry) Uint64(key string, value uint64) LogEntry { //nolint:ireturn
 	e.bytesBuffer.bytes = appendKey(e.bytesBuffer.bytes, key)
 	const base = 10
 	e.bytesBuffer.bytes = strconv.AppendUint(e.bytesBuffer.bytes, value, base)
@@ -538,7 +538,7 @@ func (e *implLogEntry) Uint64(key string, value uint64) LogEntry {
 	return e
 }
 
-func (e *implLogEntry) Logger() Logger {
+func (e *implLogEntry) Logger() Logger { //nolint:ireturn
 	copied := e.logger.copy()
 	copied.fields = append(copied.fields, e.bytesBuffer.bytes...)
 	return copied

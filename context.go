@@ -4,7 +4,7 @@ import "context"
 
 type contextKeyLogger struct{}
 
-func FromContext(ctx context.Context) (logger Logger) {
+func FromContext(ctx context.Context) (logger Logger) { //nolint:ireturn
 	if ctx == nil {
 		Global().Copy().AddCallerSkip(1).Errorf("ilog: nil context")
 		return Global().Copy()

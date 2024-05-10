@@ -12,14 +12,14 @@ var (
 	_globalLoggerMu sync.RWMutex
 )
 
-func L() Logger {
+func L() Logger { //nolint:ireturn
 	_globalLoggerMu.RLock()
 	l := _globalLogger
 	_globalLoggerMu.RUnlock()
 	return l
 }
 
-func Global() Logger {
+func Global() Logger { //nolint:ireturn
 	return L()
 }
 

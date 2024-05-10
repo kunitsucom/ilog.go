@@ -1,6 +1,4 @@
 run:
-  skip-files:
-    - cmd/sandbox/main.go
   modules-download-mode: readonly
   allow-parallel-runners: true
 
@@ -10,16 +8,17 @@ linters:
   disable:
     - deadcode # deprecated (since v1.49.0) due to: The owner seems to have abandoned the linter. Replaced by unused.
     - depguard # unnecessary
+    - dupl # too many unnecessary detections
     - exhaustruct # https://github.com/GaijinEntertainment/go-exhaustruct
     - exhaustivestruct # https://github.com/mbilski/exhaustivestruct
     - gci # unnecessary
+    - goconst # unnecessary
     - godox # unnecessary
     - golint # deprecated https://github.com/golang/lint
-    - gomnd # https://github.com/tommy-muehle/go-mnd
+    - gomnd # deprecated https://github.com/tommy-muehle/go-mnd
     - ifshort # for readability
     - interfacer # deprecated https://github.com/mvdan/interfacer
     - interfacebloat # unnecessary
-    - ireturn # unnecessary
     - lll # unnecessary
     - maligned # deprecated https://github.com/mdempsky/maligned
     - nlreturn # ignore "return with no blank line before"

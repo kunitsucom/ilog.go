@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/kunitsucom/ilog.go v0.0.1
-	github.com/rs/zerolog v1.31.0
+	github.com/rs/zerolog v1.32.0
 )
 
 require (

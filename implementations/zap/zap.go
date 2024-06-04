@@ -8,15 +8,24 @@ import (
 	"github.com/kunitsucom/ilog.go"
 )
 
+func FromLogger(ilogZap ilog.Logger) *zap.Logger {
+	il, ok := ilogZap.(*implLogger)
+	if !ok {
+		return zap.L()
+	}
+	return il.zapLogger
+}
+
 type implLogger struct {
 	level     ilog.Level
 	zapLogger *zap.Logger
 }
 
-func New(level ilog.Level, logger *zap.Logger) ilog.Logger {
+func New(level ilog.Level, logger *zap.Logger) ilog.Logger { //nolint:ireturn
+	const skip = 2
 	return &implLogger{
 		level:     level,
-		zapLogger: logger.WithOptions(zap.AddCallerSkip(2)),
+		zapLogger: logger.WithOptions(zap.AddCallerSkip(skip)),
 	}
 }
 
@@ -24,19 +33,19 @@ func (l *implLogger) Level() ilog.Level {
 	return l.level
 }
 
-func (l *implLogger) SetLevel(level ilog.Level) ilog.Logger {
+func (l *implLogger) SetLevel(level ilog.Level) ilog.Logger { //nolint:ireturn
 	copied := l.copy()
 	copied.level = level
 	return copied
 }
 
-func (l *implLogger) AddCallerSkip(skip int) ilog.Logger {
+func (l *implLogger) AddCallerSkip(skip int) ilog.Logger { //nolint:ireturn
 	copied := l.copy()
 	copied.zapLogger = l.zapLogger.WithOptions(zap.AddCallerSkip(skip))
 	return copied
 }
 
-func (l *implLogger) Copy() ilog.Logger {
+func (l *implLogger) Copy() ilog.Logger { //nolint:ireturn
 	return l.copy()
 }
 
@@ -46,67 +55,67 @@ func (l *implLogger) copy() *implLogger {
 	return &copied
 }
 
-func (l *implLogger) Any(key string, value interface{}) ilog.LogEntry {
+func (l *implLogger) Any(key string, value interface{}) ilog.LogEntry { //nolint:ireturn
 	return l.new().Any(key, value)
 }
 
-func (l *implLogger) Bool(key string, value bool) ilog.LogEntry {
+func (l *implLogger) Bool(key string, value bool) ilog.LogEntry { //nolint:ireturn
 	return l.new().Bool(key, value)
 }
 
-func (l *implLogger) Bytes(key string, value []byte) ilog.LogEntry {
+func (l *implLogger) Bytes(key string, value []byte) ilog.LogEntry { //nolint:ireturn
 	return l.new().Bytes(key, value)
 }
 
-func (l *implLogger) Duration(key string, value time.Duration) ilog.LogEntry {
+func (l *implLogger) Duration(key string, value time.Duration) ilog.LogEntry { //nolint:ireturn
 	return l.new().Duration(key, value)
 }
 
-func (l *implLogger) Err(err error) ilog.LogEntry {
+func (l *implLogger) Err(err error) ilog.LogEntry { //nolint:ireturn
 	return l.new().Err(err)
 }
 
-func (l *implLogger) ErrWithKey(key string, err error) ilog.LogEntry {
+func (l *implLogger) ErrWithKey(key string, err error) ilog.LogEntry { //nolint:ireturn
 	return l.new().ErrWithKey(key, err)
 }
 
-func (l *implLogger) Float32(key string, value float32) ilog.LogEntry {
+func (l *implLogger) Float32(key string, value float32) ilog.LogEntry { //nolint:ireturn
 	return l.new().Float32(key, value)
 }
 
-func (l *implLogger) Float64(key string, value float64) ilog.LogEntry {
+func (l *implLogger) Float64(key string, value float64) ilog.LogEntry { //nolint:ireturn
 	return l.new().Float64(key, value)
 }
 
-func (l *implLogger) Int(key string, value int) ilog.LogEntry {
+func (l *implLogger) Int(key string, value int) ilog.LogEntry { //nolint:ireturn
 	return l.new().Int(key, value)
 }
 
-func (l *implLogger) Int32(key string, value int32) ilog.LogEntry {
+func (l *implLogger) Int32(key string, value int32) ilog.LogEntry { //nolint:ireturn
 	return l.new().Int32(key, value)
 }
 
-func (l *implLogger) Int64(key string, value int64) ilog.LogEntry {
+func (l *implLogger) Int64(key string, value int64) ilog.LogEntry { //nolint:ireturn
 	return l.new().Int64(key, value)
 }
 
-func (l *implLogger) String(key, value string) ilog.LogEntry {
+func (l *implLogger) String(key, value string) ilog.LogEntry { //nolint:ireturn
 	return l.new().String(key, value)
 }
 
-func (l *implLogger) Time(key string, value time.Time) ilog.LogEntry {
+func (l *implLogger) Time(key string, value time.Time) ilog.LogEntry { //nolint:ireturn
 	return l.new().Time(key, value)
 }
 
-func (l *implLogger) Uint(key string, value uint) ilog.LogEntry {
+func (l *implLogger) Uint(key string, value uint) ilog.LogEntry { //nolint:ireturn
 	return l.new().Uint(key, value)
 }
 
-func (l *implLogger) Uint32(key string, value uint32) ilog.LogEntry {
+func (l *implLogger) Uint32(key string, value uint32) ilog.LogEntry { //nolint:ireturn
 	return l.new().Uint32(key, value)
 }
 
-func (l *implLogger) Uint64(key string, value uint64) ilog.LogEntry {
+func (l *implLogger) Uint64(key string, value uint64) ilog.LogEntry { //nolint:ireturn
 	return l.new().Uint64(key, value)
 }
 
@@ -152,87 +161,87 @@ func (*implLogEntry) Error() string {
 	return ilog.ErrLogEntryIsNotWritten.Error()
 }
 
-func (e *implLogEntry) Any(key string, value interface{}) ilog.LogEntry {
+func (e *implLogEntry) Any(key string, value interface{}) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.Any(key, value))
 	return e
 }
 
-func (e *implLogEntry) Bool(key string, value bool) ilog.LogEntry {
+func (e *implLogEntry) Bool(key string, value bool) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.Bool(key, value))
 	return e
 }
 
-func (e *implLogEntry) Bytes(key string, value []byte) ilog.LogEntry {
+func (e *implLogEntry) Bytes(key string, value []byte) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.ByteString(key, value))
 	return e
 }
 
-func (e *implLogEntry) Duration(key string, value time.Duration) ilog.LogEntry {
+func (e *implLogEntry) Duration(key string, value time.Duration) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.Duration(key, value))
 	return e
 }
 
-func (e *implLogEntry) Err(err error) ilog.LogEntry {
+func (e *implLogEntry) Err(err error) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.Error(err))
 	return e
 }
 
-func (e *implLogEntry) ErrWithKey(key string, err error) ilog.LogEntry {
+func (e *implLogEntry) ErrWithKey(key string, err error) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.NamedError(key, err))
 	return e
 }
 
-func (e *implLogEntry) Float32(key string, value float32) ilog.LogEntry {
+func (e *implLogEntry) Float32(key string, value float32) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.Float32(key, value))
 	return e
 }
 
-func (e *implLogEntry) Float64(key string, value float64) ilog.LogEntry {
+func (e *implLogEntry) Float64(key string, value float64) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.Float64(key, value))
 	return e
 }
 
-func (e *implLogEntry) Int(key string, value int) ilog.LogEntry {
+func (e *implLogEntry) Int(key string, value int) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.Int(key, value))
 	return e
 }
 
-func (e *implLogEntry) Int32(key string, value int32) ilog.LogEntry {
+func (e *implLogEntry) Int32(key string, value int32) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.Int32(key, value))
 	return e
 }
 
-func (e *implLogEntry) Int64(key string, value int64) ilog.LogEntry {
+func (e *implLogEntry) Int64(key string, value int64) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.Int64(key, value))
 	return e
 }
 
-func (e *implLogEntry) String(key, value string) ilog.LogEntry {
+func (e *implLogEntry) String(key, value string) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.String(key, value))
 	return e
 }
 
-func (e *implLogEntry) Time(key string, value time.Time) ilog.LogEntry {
+func (e *implLogEntry) Time(key string, value time.Time) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.Time(key, value))
 	return e
 }
 
-func (e *implLogEntry) Uint(key string, value uint) ilog.LogEntry {
+func (e *implLogEntry) Uint(key string, value uint) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.Uint(key, value))
 	return e
 }
 
-func (e *implLogEntry) Uint32(key string, value uint32) ilog.LogEntry {
+func (e *implLogEntry) Uint32(key string, value uint32) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.Uint32(key, value))
 	return e
 }
 
-func (e *implLogEntry) Uint64(key string, value uint64) ilog.LogEntry {
+func (e *implLogEntry) Uint64(key string, value uint64) ilog.LogEntry { //nolint:ireturn
 	e.fields = append(e.fields, zap.Uint64(key, value))
 	return e
 }
 
-func (e *implLogEntry) Logger() ilog.Logger {
+func (e *implLogEntry) Logger() ilog.Logger { //nolint:ireturn
 	copied := e.logger.copy()
 	copied.zapLogger = copied.zapLogger.With(e.fields...)
 	return copied

@@ -8,12 +8,20 @@ import (
 	"github.com/kunitsucom/ilog.go"
 )
 
+func FromLogger(ilogZerolog ilog.Logger) *zerolog.Logger {
+	il, ok := ilogZerolog.(*implLogger)
+	if !ok {
+		return zerolog.DefaultContextLogger
+	}
+	return il.zerologLogger
+}
+
 type implLogger struct {
 	level         ilog.Level
 	zerologLogger *zerolog.Logger
 }
 
-func New(level ilog.Level, l zerolog.Logger) ilog.Logger {
+func New(level ilog.Level, l zerolog.Logger) ilog.Logger { //nolint:ireturn
 	return &implLogger{
 		level:         level,
 		zerologLogger: &l,
@@ -24,20 +32,20 @@ func (l *implLogger) Level() ilog.Level {
 	return l.level
 }
 
-func (l *implLogger) SetLevel(level ilog.Level) ilog.Logger {
+func (l *implLogger) SetLevel(level ilog.Level) ilog.Logger { //nolint:ireturn
 	copied := l.copy()
 	copied.level = level
 	return copied
 }
 
-func (l *implLogger) AddCallerSkip(skip int) ilog.Logger {
+func (l *implLogger) AddCallerSkip(skip int) ilog.Logger { //nolint:ireturn
 	copied := l.copy()
 	logger := l.zerologLogger.With().Caller().CallerWithSkipFrameCount(skip).Logger()
 	copied.zerologLogger = &logger
 	return copied
 }
 
-func (l *implLogger) Copy() ilog.Logger {
+func (l *implLogger) Copy() ilog.Logger { //nolint:ireturn
 	return l.copy()
 }
 
@@ -48,67 +56,67 @@ func (l *implLogger) copy() *implLogger {
 	return &copied
 }
 
-func (l *implLogger) Any(key string, value interface{}) ilog.LogEntry {
+func (l *implLogger) Any(key string, value interface{}) ilog.LogEntry { //nolint:ireturn
 	return l.new().Any(key, value)
 }
 
-func (l *implLogger) Bool(key string, value bool) ilog.LogEntry {
+func (l *implLogger) Bool(key string, value bool) ilog.LogEntry { //nolint:ireturn
 	return l.new().Bool(key, value)
 }
 
-func (l *implLogger) Bytes(key string, value []byte) ilog.LogEntry {
+func (l *implLogger) Bytes(key string, value []byte) ilog.LogEntry { //nolint:ireturn
 	return l.new().Bytes(key, value)
 }
 
-func (l *implLogger) Duration(key string, value time.Duration) ilog.LogEntry {
+func (l *implLogger) Duration(key string, value time.Duration) ilog.LogEntry { //nolint:ireturn
 	return l.new().Duration(key, value)
 }
 
-func (l *implLogger) Err(err error) ilog.LogEntry {
+func (l *implLogger) Err(err error) ilog.LogEntry { //nolint:ireturn
 	return l.new().Err(err)
 }
 
-func (l *implLogger) ErrWithKey(key string, err error) ilog.LogEntry {
+func (l *implLogger) ErrWithKey(key string, err error) ilog.LogEntry { //nolint:ireturn
 	return l.new().ErrWithKey(key, err)
 }
 
-func (l *implLogger) Float32(key string, value float32) ilog.LogEntry {
+func (l *implLogger) Float32(key string, value float32) ilog.LogEntry { //nolint:ireturn
 	return l.new().Float32(key, value)
 }
 
-func (l *implLogger) Float64(key string, value float64) ilog.LogEntry {
+func (l *implLogger) Float64(key string, value float64) ilog.LogEntry { //nolint:ireturn
 	return l.new().Float64(key, value)
 }
 
-func (l *implLogger) Int(key string, value int) ilog.LogEntry {
+func (l *implLogger) Int(key string, value int) ilog.LogEntry { //nolint:ireturn
 	return l.new().Int(key, value)
 }
 
-func (l *implLogger) Int32(key string, value int32) ilog.LogEntry {
+func (l *implLogger) Int32(key string, value int32) ilog.LogEntry { //nolint:ireturn
 	return l.new().Int32(key, value)
 }
 
-func (l *implLogger) Int64(key string, value int64) ilog.LogEntry {
+func (l *implLogger) Int64(key string, value int64) ilog.LogEntry { //nolint:ireturn
 	return l.new().Int64(key, value)
 }
 
-func (l *implLogger) String(key, value string) ilog.LogEntry {
+func (l *implLogger) String(key, value string) ilog.LogEntry { //nolint:ireturn
 	return l.new().String(key, value)
 }
 
-func (l *implLogger) Time(key string, value time.Time) ilog.LogEntry {
+func (l *implLogger) Time(key string, value time.Time) ilog.LogEntry { //nolint:ireturn
 	return l.new().Time(key, value)
 }
 
-func (l *implLogger) Uint(key string, value uint) ilog.LogEntry {
+func (l *implLogger) Uint(key string, value uint) ilog.LogEntry { //nolint:ireturn
 	return l.new().Uint(key, value)
 }
 
-func (l *implLogger) Uint32(key string, value uint32) ilog.LogEntry {
+func (l *implLogger) Uint32(key string, value uint32) ilog.LogEntry { //nolint:ireturn
 	return l.new().Uint32(key, value)
 }
 
-func (l *implLogger) Uint64(key string, value uint64) ilog.LogEntry {
+func (l *implLogger) Uint64(key string, value uint64) ilog.LogEntry { //nolint:ireturn
 	return l.new().Uint64(key, value)
 }
 
@@ -153,119 +161,119 @@ func (*implLogEntry) Error() string {
 	return ilog.ErrLogEntryIsNotWritten.Error()
 }
 
-func (e *implLogEntry) Any(key string, value interface{}) ilog.LogEntry {
+func (e *implLogEntry) Any(key string, value interface{}) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.Interface(key, value)
 	})
 	return e
 }
 
-func (e *implLogEntry) Bool(key string, value bool) ilog.LogEntry {
+func (e *implLogEntry) Bool(key string, value bool) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.Bool(key, value)
 	})
 	return e
 }
 
-func (e *implLogEntry) Bytes(key string, value []byte) ilog.LogEntry {
+func (e *implLogEntry) Bytes(key string, value []byte) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.Bytes(key, value)
 	})
 	return e
 }
 
-func (e *implLogEntry) Duration(key string, value time.Duration) ilog.LogEntry {
+func (e *implLogEntry) Duration(key string, value time.Duration) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.Dur(key, value)
 	})
 	return e
 }
 
-func (e *implLogEntry) Err(err error) ilog.LogEntry {
+func (e *implLogEntry) Err(err error) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.Err(err)
 	})
 	return e
 }
 
-func (e *implLogEntry) ErrWithKey(key string, err error) ilog.LogEntry {
+func (e *implLogEntry) ErrWithKey(key string, err error) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.AnErr(key, err)
 	})
 	return e
 }
 
-func (e *implLogEntry) Float32(key string, value float32) ilog.LogEntry {
+func (e *implLogEntry) Float32(key string, value float32) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.Float32(key, value)
 	})
 	return e
 }
 
-func (e *implLogEntry) Float64(key string, value float64) ilog.LogEntry {
+func (e *implLogEntry) Float64(key string, value float64) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.Float64(key, value)
 	})
 	return e
 }
 
-func (e *implLogEntry) Int(key string, value int) ilog.LogEntry {
+func (e *implLogEntry) Int(key string, value int) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.Int(key, value)
 	})
 	return e
 }
 
-func (e *implLogEntry) Int32(key string, value int32) ilog.LogEntry {
+func (e *implLogEntry) Int32(key string, value int32) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.Int32(key, value)
 	})
 	return e
 }
 
-func (e *implLogEntry) Int64(key string, value int64) ilog.LogEntry {
+func (e *implLogEntry) Int64(key string, value int64) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.Int64(key, value)
 	})
 	return e
 }
 
-func (e *implLogEntry) String(key, value string) ilog.LogEntry {
+func (e *implLogEntry) String(key, value string) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.Str(key, value)
 	})
 	return e
 }
 
-func (e *implLogEntry) Time(key string, value time.Time) ilog.LogEntry {
+func (e *implLogEntry) Time(key string, value time.Time) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.Time(key, value)
 	})
 	return e
 }
 
-func (e *implLogEntry) Uint(key string, value uint) ilog.LogEntry {
+func (e *implLogEntry) Uint(key string, value uint) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.Uint(key, value)
 	})
 	return e
 }
 
-func (e *implLogEntry) Uint32(key string, value uint32) ilog.LogEntry {
+func (e *implLogEntry) Uint32(key string, value uint32) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.Uint32(key, value)
 	})
 	return e
 }
 
-func (e *implLogEntry) Uint64(key string, value uint64) ilog.LogEntry {
+func (e *implLogEntry) Uint64(key string, value uint64) ilog.LogEntry { //nolint:ireturn
 	e.zCtxs = append(e.zCtxs, func(e zerolog.Context) zerolog.Context {
 		return e.Uint64(key, value)
 	})
 	return e
 }
 
-func (e *implLogEntry) Logger() ilog.Logger {
+func (e *implLogEntry) Logger() ilog.Logger { //nolint:ireturn
 	copied := e.logger.copy()
 	c := copied.zerologLogger.With()
 	for _, event := range e.zCtxs {

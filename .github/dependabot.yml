@@ -1,7 +1,7 @@
 version: 2
 updates:
 
-  - package-ecosystem: "github-actions" # See documentation for possible values
+  - package-ecosystem: "github-actions"
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
@@ -46,7 +46,7 @@ updates:
           - "*"
 
   - package-ecosystem: "gomod"
-    directory: "/implementations/zerolog/" # Location of package manifests
+    directory: "/implementations/zap/" # Location of package manifests
     schedule:
       interval: "weekly"
       day: "monday"
@@ -68,7 +68,7 @@ updates:
           - "*"
 
   - package-ecosystem: "gomod"
-    directory: "/implementations/zap/" # Location of package manifests
+    directory: "/implementations/zerolog/" # Location of package manifests
     schedule:
       interval: "weekly"
       day: "monday"

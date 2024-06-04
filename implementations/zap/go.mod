@@ -2,7 +2,7 @@ module github.com/kunitsucom/ilog.go/implementations/zap
 
 go 1.13
 
-replace github.com/kunitsucom/ilog.go => ../..
+replace github.com/kunitsucom/ilog.go v0.0.0-00010101000000-000000000000 => ../..
 
 require (
 	github.com/kunitsucom/ilog.go v0.0.0-00010101000000-000000000000

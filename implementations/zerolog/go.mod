@@ -2,10 +2,8 @@ module github.com/kunitsucom/ilog.go/implementations/zerolog
 
 go 1.21.0
 
-replace github.com/kunitsucom/ilog.go v0.0.0-00010101000000-000000000000 => ../..
-
 require (
-	github.com/kunitsucom/ilog.go v0.0.0-00010101000000-000000000000
+	github.com/kunitsucom/ilog.go v0.0.2-rc.6
 	github.com/rs/zerolog v1.33.0
 )
 

@@ -1,10 +1,10 @@
 SHELL             := /usr/bin/env bash -Eeu -o pipefail
-GITROOT           := $(shell git rev-parse --show-toplevel)
+REPO_ROOT         := $(shell git rev-parse --show-toplevel)
 MAKEFILE_DIR      := $(shell { cd "$(subst /,,$(dir $(lastword ${MAKEFILE_LIST})))" && pwd; } || pwd)
 DOTLOCAL_DIR      := ${MAKEFILE_DIR}/.local
-PRE_PUSH          := ${GITROOT}/.git/hooks/pre-push
+PRE_PUSH          := ${REPO_ROOT}/.git/hooks/pre-push
 
-export PATH := ${DOTLOCAL_DIR}/bin:${GITROOT}/.bin:${PATH}
+export PATH := ${DOTLOCAL_DIR}/bin:${REPO_ROOT}/.bin:${PATH}
 
 .DEFAULT_GOAL := help
 .PHONY: help
@@ -13,7 +13,7 @@ help: githooks ## Display this help documents
 
 .PHONY: githooks
 githooks:
-	@[[ -f "${PRE_PUSH}" ]] || cp -aiv "${GITROOT}/.githooks/pre-push" "${PRE_PUSH}"
+	@[[ -f "${PRE_PUSH}" ]] || cp -aiv "${REPO_ROOT}/.githooks/pre-push" "${PRE_PUSH}"
 
 .PHONY: setup
 setup: githooks ## Setup tools for development

@@ -63,3 +63,7 @@ test: githooks ## Run go test and display coverage
 
 .PHONY: ci
 ci: lint test ## CI command set
+
+.PHONY: release
+release:  ## git tag per go modules for release
+	${REPO_ROOT}/.bin/git-tag-go-mod.sh
